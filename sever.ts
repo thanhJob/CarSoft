@@ -4,19 +4,22 @@ import dotenv from 'dotenv';
 dotenv.config({ path: './config.env' }); 
 import app from './index';
 
-const DB = process.env.DATABASE;
-if(!DB) console.log('Data not found');
+const dataURL = process.env.DATABASE;
+
 // CONNECT DB
-mongoose.connect(DB, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true,
-})
-.then(db => console.log('Connect data successfully!'))
-.catch(err => console.log(err));
-
-
+if(!dataURL){
+    console.log('Can not found DB!');
+}else{
+    mongoose
+    .connect(dataURL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useCreateIndex: true,
+        useFindAndModify: false,
+    })
+    .then(db => console.log('Connect mongoDB successfully!'))
+    .catch(err => console.log(err));
+};
 
 
 const port = process.env.PORT || 3000;
