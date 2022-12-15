@@ -1,59 +1,71 @@
-import mongoose  from "mongoose";
+import mongoose from "mongoose";
 import { Schema, Document } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
-import User from './interface';
+import User from "./interface";
 
-
-const userSchema = new Schema<User>({
+const userSchema = new Schema<User>(
+  {
     name: {
-        type: String,
-        required: [true, 'Please tell us your name!']
+      type: String,
+      required: [true, "Please tell us your name!"],
     },
     email: {
-        type: String,
-        required: [true, 'Please provide your email!'],
-        unique: true,
-        lowercase: true,
-        validate: [validator.isEmail, 'Please provide valid email!']
+      type: String,
+      required: [true, "Please provide your email!"],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, "Please provide valid email!"],
     },
     photo: String,
     role: {
-        type: String,
-        enum: ['user', 'guide', 'lead-guide', 'admin', 'client'],
-        default: 'user'
+      type: String,
+      enum: ["user", "guide", "lead-guide", "admin", "client"],
+      default: "user",
     },
     password: {
-        type: String,
-        required: [true, 'Please provide a password!'],
-        minLength: 8,
-        select: false
+      type: String,
+      required: [true, "Please provide a password!"],
+      minLength: 8,
+      select: false,
     },
-    passwordConfirm: {
-        type: String,
-        required: [true, 'Please confirm your password!'],
-    },
+    // passwordConfirm: {
+    //     type: String,
+    //     required: [true, 'Please confirm your password!'],
+    // },
     passwordChangedAt: Date,
     active: {
-        type: Boolean,
-        default: true
-    }
-},{
+      type: Boolean,
+      default: true,
+    },
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+  },
+  {
     toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    toObject: { virtuals: true },
+  }
+);
+
+// hash password save
+userSchema.pre<User>("save", async function (next) {
+  const hash = await bcrypt.hash(this.password, 10);
+  this.password = hash;
+  next();
 });
 
-userSchema.virtual('price-old', function(){
-})
-
-userSchema.pre('save', async function(){
-})
-
-userSchema.method('comparePass', async function comparePass(doc) {
-    console.log(doc)
-    // doc.p
-    // return await bcrypt.compare(this.password, this.passwordConfirm)
+userSchema.pre<User>(/^find/, function (next) {
+  this.find({
+    active: { $ne: false },
+  });
+  next();
 });
 
-const User = mongoose.model<User & mongoose.Document>('User', userSchema);
+userSchema.methods.conrrectPassword = async function (
+  passwordCurrent: string
+): Promise<boolean> {
+  return await bcrypt.compare(passwordCurrent, this.password);
+};
+
+const User = mongoose.model<User & mongoose.Document>("User", userSchema);
 export default User;

@@ -5,18 +5,27 @@ import {
     deleteData,
     findParams,
     getData,
+    getTopPriceCar,
     updateData
 }from '../controllers/projectController';
+import { resTricto, security } from '../controllers/authController';
 
 const routerData = Router();
-const projectPath = '/overview';
+const projectPath = '/cars';
 
 routerData
-    .get(projectPath + '/getCarStats', aggregateCar);
+    .get(projectPath + '/getCarStats', aggregateCar)
+    .get(projectPath + '/topPriceCar',
+    getTopPriceCar,
+    getData
+);
 
 // Overview
 routerData
-    .get(projectPath, getData)
+    .get(projectPath,
+        security,
+        resTricto('admin'),
+        getData)
     .post(projectPath + '/createNewCar', createData);
 
 // :ID

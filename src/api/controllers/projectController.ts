@@ -2,6 +2,19 @@ import { Router } from 'express';
 import { NextFunction, Request, Response } from 'express';
 import Cars from '../Models/cars/carsModel';
 
+export function getTopPriceCar(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
+    // @ts-ignore
+    // const limit: number = req.query.limit ?? String;
+    req.query.limit = 3;
+    req.query.fields = ('name, price, classify');
+    req.query.sort = ('-price');
+
+    next();
+};
 
 export async function getData(
     req: Request,
@@ -9,33 +22,6 @@ export async function getData(
     next: NextFunction
 ){
     try {
-
-        class APIFeatures{
-            public query : String;
-            public queryString : String;
-            constructor(
-                query: String,
-                queryString: String
-            ){
-                this.query = query;
-                this.queryString = queryString
-            };
-
-            filter(){
-                const queryObj = {...this.queryString};
-                const removeField = ['limit', 'sort', 'fields', 'page'];
-                removeField.forEach(el => {
-                    const typedata: string = el;
-                    delete queryObj[el];
-                });
-        
-                let queryStr = JSON.stringify(queryObj);
-                queryStr = queryStr.replace(
-                    /\b(gte|gt|lte|lt)\b/g, match => `$${match}`
-                );
-                let query = Cars.find(JSON.parse(queryStr));
-            }
-        }
 
         const queryObj = {...req.query};
         const removeField = ['limit', 'sort', 'fields', 'page'];
